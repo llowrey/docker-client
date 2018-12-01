@@ -3070,6 +3070,36 @@ public class DefaultDockerClientTest {
   }
 
   @Test
+  public void testContainerMounts() throws Exception {
+    requireDockerApiVersionAtLeast(
+            "1.25", "Creating a container with mounts and inspecting mounts");
+    
+    final Mount mount = Mount.builder()
+        .type("tmpfs")
+        .target("/foo")
+        .build();
+    
+    final HostConfig hostConfig = HostConfig.builder()
+        .mounts(mount)
+        .build();
+
+    final ContainerConfig containerConfig = ContainerConfig.builder()
+        .image(BUSYBOX_LATEST)
+        .hostConfig(hostConfig)
+        .build();
+
+    final String id = sut.createContainer(containerConfig, randomName()).id();
+    final ContainerInfo containerInfo = sut.inspectContainer(id);
+    final List<ContainerMount> mounts = containerInfo.mounts();
+
+    assertThat(mounts.size(), equalTo(1));
+
+    final ContainerMount containerMount = mounts.get(0);
+    assertThat(containerMount.type(), is("tmpfs"));
+    assertThat(containerMount.destination(), is("/foo"));
+  }
+  
+  @Test
   public void testAttachContainer() throws Exception {
     sut.pull(BUSYBOX_LATEST);
 

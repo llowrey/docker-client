@@ -34,6 +34,7 @@ import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
+import com.spotify.docker.client.messages.mount.Mount;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
@@ -123,6 +124,10 @@ public abstract class HostConfig {
   @JsonProperty("VolumesFrom")
   public abstract ImmutableList<String> volumesFrom();
 
+  @Nullable
+  @JsonProperty("Mounts")
+  public abstract ImmutableList<Mount> mounts();
+  
   @Nullable
   @JsonProperty("CapAdd")
   public abstract ImmutableList<String> capAdd();
@@ -304,7 +309,8 @@ public abstract class HostConfig {
       @JsonProperty("Tmpfs") final Map<String, String> tmpfs,
       @JsonProperty("ReadonlyRootfs") final Boolean readonlyRootfs,
       @JsonProperty("Runtime") final String runtime,
-      @JsonProperty("StorageOpt") final Map<String, String> storageOpt) {
+      @JsonProperty("StorageOpt") final Map<String, String> storageOpt,
+      @JsonProperty("Mounts") final List<Mount> mounts) {
     return builder()
         .binds(binds)
         .blkioWeight(blkioWeight)
@@ -356,6 +362,7 @@ public abstract class HostConfig {
         .readonlyRootfs(readonlyRootfs)
         .storageOpt(storageOpt)
         .runtime(runtime)
+        .mounts(mounts)
         .build();
   }
 
@@ -662,6 +669,10 @@ public abstract class HostConfig {
     public abstract Builder storageOpt(Map<String, String> tmpfs);
 
     public abstract Builder runtime(String runtime);
+    
+    public abstract Builder mounts(List<Mount> mounts);
+
+    public abstract Builder mounts(Mount ...mounts);
 
     // Validation of property values using AutoValue requires we split the build method into two.
     // AutoValue implements this package-private method.
